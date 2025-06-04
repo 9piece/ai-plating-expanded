@@ -1,3 +1,4 @@
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -6,21 +7,21 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
 
   try {
-    const response = await fetch("https://ark.cn-beijing.volces.com/api/v3/chat/completions", {
+    const response = await fetch("https://ark.cn-beijing.volces.com/api/v3/drive/prediction", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer 0bce1539-21ee-486d-acdd-95ecc559e984"
+        "Authorization": "Bearer YOUR_API_KEY"
       },
       body: JSON.stringify({
-        model: "ep-20250603194600-lxnmn",
-        messages: [{ role: "user", content: [{ type: "text", text: `请扩写以下关于菜名与风格的描述，使其更丰富、具体、有画面感：${prompt}` }] }]
+        model_id: "ep-20250604143921-24mx5",
+        inputs: { prompt: "请扩写以下食物摆盘提示词：" + prompt }
       })
     });
 
     const data = await response.json();
-    const expanded = data.choices?.[0]?.message?.content || prompt;
-    res.status(200).json({ expanded });
+    const expanded = data?.output?.text || prompt;
+    res.status(200).json({ prompt: expanded });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI 摆盘图生成</title>
+</head>
+<body>
+  <h1>AI 摆盘图生成</h1>
+  <input type="text" id="promptInput" placeholder="如 红烧牛肉+中式禅意"/>
+  <button onclick="generateImage()">生成图像</button>
+  <div id="output"></div>
+  <script>
+    async function generateImage() {
+      const input = document.getElementById('promptInput').value;
+      const expandRes = await fetch('/api/expand', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: input })
+      });
+      const expandData = await expandRes.json();
+      const expandedPrompt = expandData.expanded;
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: expandedPrompt })
+      });
+      const data = await res.json();
+      document.getElementById('output').innerHTML = '<img src="' + data.image + '" />';
+    }
+  </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   const { prompt } = req.body;
 
   try {
-    const response = await fetch("https://https://ark.cn-beijing.volces.com/api/v3/chat/completions
+    const response = await fetch("https://ark.cn-beijing.volces.com/api/v3/chat/completions
 ", {
       method: "POST",
       headers: {

@@ -2,32 +2,113 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI 摆盘图生成</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background: linear-gradient(to bottom right, #fff4e6, #fff7cc);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    input {
+      padding: 1rem;
+      width: 60%;
+      border: 2px solid orange;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 1rem 2rem;
+      background-color: #ff4d4f;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .styles {
+      margin-top: 2rem;
+    }
+    .styles button {
+      margin: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid orange;
+      background-color: #ffc107;
+      color: #333;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    .result img {
+      max-width: 80%;
+      margin-top: 2rem;
+      border-radius: 10px;
+    }
+    .result button {
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <h1>AI 摆盘图生成</h1>
-  <input type="text" id="promptInput" placeholder="如 红烧牛肉+中式禅意"/>
-  <button onclick="generateImage()">生成图像</button>
-  <div id="output"></div>
-  <script>
-    async function generateImage() {
-      const input = document.getElementById('promptInput').value;
-      const expandRes = await fetch('/api/expand', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: input })
-      });
-      const expandData = await expandRes.json();
-      const expandedPrompt = expandData.expanded;
+  <h1>🍽️ AI 摆盘图生成</h1>
+  <input type="text" id="prompt" placeholder="如 红烧牛肉+中式禅意" />
+  <button onclick="generate()">生成图像</button>
 
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: expandedPrompt })
+  <div class="styles">
+    <p>推荐风格：</p>
+    <button onclick="insertStyle('日式极简')">日式极简</button>
+    <button onclick="insertStyle('中式禅意')">中式禅意</button>
+    <button onclick="insertStyle('未来主义')">未来主义</button>
+    <button onclick="insertStyle('艺术装置风')">艺术装置风</button>
+    <button onclick="insertStyle('分子料理')">分子料理</button>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    function insertStyle(style) {
+      const input = document.getElementById("prompt");
+      if (!input.value.includes(style)) {
+        input.value += (input.value ? "+" : "") + style;
+      }
+    }
+
+    async function generate() {
+      const prompt = document.getElementById("prompt").value;
+      const result = document.getElementById("result");
+      result.innerHTML = "生成中...";
+
+      const expandRes = await fetch("/api/expand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
       });
+      const expanded = await expandRes.json();
+      const fullPrompt = expanded.text || prompt;
+
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: fullPrompt })
+      });
+
       const data = await res.json();
-      document.getElementById('output').innerHTML = '<img src="' + data.image + '" />';
+      if (data.image) {
+        result.innerHTML = `
+          <img src="${data.image}" alt="生成图像" />
+          <br/><a href="${data.image}" download="plating.jpg"><button>下载图片</button></a>
+        `;
+      } else {
+        result.innerHTML = "生成失败：" + (data.error || "未知错误");
+      }
     }
   </script>
 </body>
